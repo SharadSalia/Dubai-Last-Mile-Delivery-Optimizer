@@ -101,7 +101,6 @@ def solve_vrp(distance_matrix):
     return None
 
 # --- UI LAYOUT ---
-# --- UI LAYOUT ---
 col1, col2 = st.columns([2, 1])
 
 with col1:
@@ -120,7 +119,7 @@ with col1:
         ).add_to(m)
 
     # 3. Render Map and Capture Clicks
-    map_data = st_folium(m, width=700, height=500)
+    map_data = st_folium(m, use_container_width=True, height=400)
 
     # 4. Handle New Clicks
     if map_data['last_clicked']:
@@ -196,4 +195,4 @@ with col2:
                     
                     with final_map_container.container():
                         st.subheader("✅ Optimized Real-Road Route")
-                        st.components.v1.html(m_final._repr_html_(), height=500)
+                        st_folium(m_final, use_container_width=True, height=400, returned_objects=[])
