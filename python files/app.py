@@ -21,13 +21,26 @@ if "stops" not in st.session_state:
 
 # --- FUNCTIONS ---
 def get_osrm_matrix(stops):
-    """Calls OSRM API to get actual driving distances (in meters) between all points."""
-    # OSRM expects coordinates in lon,lat format separated by semicolons
+    """Calls OSRM API to get actual driving distances and sanitizes them for OR-Tools."""
     coords = ";".join([f"{stop['lon']},{stop['lat']}" for stop in stops])
     url = f"http://router.project-osrm.org/table/v1/driving/{coords}?annotations=distance"
     
     response = requests.get(url).json()
-    return response['distances']
+    raw_matrix = response['distances']
+    
+    # OR-Tools STRICTLY requires integers. We must sanitize the OSRM floats.
+    clean_matrix = []
+    for row in raw_matrix:
+        clean_row = []
+        for val in row:
+            if val is None:
+                # If OSRM can't find a route between two specific points, assign a massive penalty
+                clean_row.append(9999999) 
+            else:
+                clean_row.append(int(val))
+        clean_matrix.append(clean_row)
+        
+    return clean_matrix
 
 def get_osrm_route_geometry(stops, indices):
     """Fetches exact turn-by-turn road geometry leg-by-leg to prevent OSRM from skipping stops."""
